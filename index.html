@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encurtador de Links</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Encurtador de Links</h1>
+
+        <div class="mb-4">
+            <input id="campo-link-longo" type="url" placeholder="Cole seu link longo aqui..." class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <button id="botao-encurtar" class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-600 transition duration-300">
+            Encurtar Link
+        </button>
+
+        <div id="div-resultado" class="mt-6 hidden">
+            <p class="text-gray-600 mb-2">Link encurtado:</p>
+            <div class="flex items-center">
+                <input id="campo-link-curto" type="text" readonly class="flex-grow bg-gray-200 text-gray-800 px-4 py-2 rounded-l-md cursor-pointer select-all">
+                <button onclick="copiarLink()" class="bg-green-500 text-white py-2 px-4 rounded-r-md hover:bg-green-600 transition duration-300">
+                    Copiar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('botao-encurtar').addEventListener('click', async () => {
+            const linkLongo = document.getElementById('campo-link-longo').value;
+            if (!linkLongo) {
+                alert('Por favor, insira um link válido.');
+                return;
+            }
+
+            try {
+                const resposta = await fetch('/encurtar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ link: linkLongo })
+                });
+
+                const dados = await resposta.json();
+                if (resposta.ok) {
+                    const linkCurtoCampo = document.getElementById('campo-link-curto');
+                    linkCurtoCampo.value = dados.link_curto;
+                    document.getElementById('div-resultado').classList.remove('hidden');
+                } else {
+                    alert(`Erro ao encurtar o link: ${dados.erro}`);
+                }
+            } catch (erro) {
+                alert('Erro de conexão com o servidor.');
+                console.error('Erro:', erro);
+            }
+        });
+
+        function copiarLink() {
+            const campo = document.getElementById('campo-link-curto');
+            campo.select();
+            document.execCommand('copy');
+            alert('Link copiado para a área de transferência!');
+        }
+    </script>
+</body>
+</html>
